@@ -1,0 +1,86 @@
+﻿import pandas as pd
+
+
+def load_data(file):
+    name = getattr(file, "name", str(file))
+
+    if name.endswith(".csv"):
+        df = pd.read_csv(file)
+    elif name.endswith((".xlsx", ".xls")):
+        df = pd.read_excel(file)
+    else:
+        raise ValueError("Formato nao suportado. Use CSV ou Excel (.xlsx/.xls).")
+
+    return df
+
+
+def basic_clean(df):
+    df = df.copy()
+
+    df.columns = [str(c).strip() for c in df.columns]
+    df = df.dropna(axis=1, how="all")
+    df = df.dropna(axis=0, how="all")
+
+    for col in df.select_dtypes(include="object").columns:
+        try:
+            parsed = pd.to_datetime(df[col], errors="coerce", utc=True)
+            taxa_sucesso = parsed.notna().mean()
+            if taxa_sucesso > 0.9:
+                df[col] = parsed.dt.tz_localize(None)
+        except Exception:
+            pass
+
+    return df
+
+
+def get_column_types(df, max_categories=100):
+    categorical_cols = []
+    numeric_cols = df.select_dtypes(include="number").columns.tolist()
+    datetime_cols = df.select_dtypes(include="datetime").columns.tolist()
+
+    for col in df.select_dtypes(include="object").columns:
+        if df[col].nunique() <= max_categories:
+            categorical_cols.append(col)
+
+    return {
+        "categorical": categorical_cols,
+        "numeric": numeric_cols,
+        "datetime": datetime_cols,
+    }
+
+
+def get_binary_outcome_column(df, categorical_cols):
+    for col in categorical_cols:
+        if df[col].nunique() == 2:
+            return col
+    return None
+
+
+COLUMN_TRANSLATIONS = {
+    "PatientId": "ID do Paciente",
+    "AppointmentID": "ID da Consulta",
+    "Gender": "Genero",
+    "ScheduledDay": "Dia do Agendamento",
+    "AppointmentDay": "Dia da Consulta",
+    "Age": "Idade",
+    "Neighbourhood": "Bairro",
+    "Scholarship": "Bolsa Familia",
+    "Hipertension": "Hipertensao",
+    "Diabetes": "Diabetes",
+    "Alcoholism": "Alcoolismo",
+    "Handcap": "Deficiencia",
+    "SMS_received": "Recebeu SMS",
+    "No-show": "Faltou",
+}
+
+
+def translate_columns(df):
+    df = df.copy()
+
+    def _formatar(col):
+        if col in COLUMN_TRANSLATIONS:
+            return COLUMN_TRANSLATIONS[col]
+        return col.replace("_", " ").replace("-", " ").strip().title()
+
+    df.columns = [_formatar(c) for c in df.columns]
+    return df
