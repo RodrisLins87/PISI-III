@@ -50,10 +50,33 @@ def get_column_types(df, max_categories=100):
 
 
 def get_binary_outcome_column(df, categorical_cols):
+    palavras_chave = ["falt", "show", "outcome", "target", "cancel", "default", "churn", "desfecho", "evas"]
+
+    for col in categorical_cols:
+        if df[col].nunique() == 2 and any(p in col.lower() for p in palavras_chave):
+            return col
+
     for col in categorical_cols:
         if df[col].nunique() == 2:
             return col
+
     return None
+
+
+def get_binary_numeric_columns(df, numeric_cols):
+    return [col for col in numeric_cols if df[col].nunique() == 2]
+
+
+def factor_analysis(df, outcome_col, positive_value, factor_cols):
+    linhas = []
+    for col in factor_cols:
+        if col == outcome_col:
+            continue
+        grupos = df.groupby(col)[outcome_col].apply(lambda s: (s == positive_value).mean() * 100)
+        for grupo, taxa in grupos.items():
+            linhas.append({"Fator": col, "Grupo": str(grupo), "Taxa (%)": round(taxa, 1)})
+
+    return pd.DataFrame(linhas)
 
 
 COLUMN_TRANSLATIONS = {

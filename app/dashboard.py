@@ -6,7 +6,15 @@ import plotly.express as px
 import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from src.etl import load_data, basic_clean, get_column_types, get_binary_outcome_column, translate_columns
+from src.etl import (
+    load_data,
+    basic_clean,
+    get_column_types,
+    get_binary_outcome_column,
+    get_binary_numeric_columns,
+    factor_analysis,
+    translate_columns,
+)
 
 st.set_page_config(page_title="Dashboard", layout="wide")
 
@@ -94,6 +102,42 @@ with col_b:
         num_col = st.selectbox("Coluna numerica", col_types["numeric"], key="num_chart")
         fig2 = px.histogram(df_filtered, x=num_col, title=f"Distribuicao de {num_col}")
         st.plotly_chart(fig2, use_container_width=True)
+
+if outcome_col:
+    st.subheader(f"Analise por fator - {outcome_col}")
+
+    valores_desfecho = sorted(df[outcome_col].dropna().unique().tolist())
+    valor_positivo = st.selectbox(
+        f"Valor de '{outcome_col}' considerado o desfecho de interesse",
+        valores_desfecho,
+        index=0,
+        key="valor_positivo",
+    )
+
+    fatores_disponiveis = get_binary_numeric_columns(df, col_types["numeric"])
+    fatores_disponiveis = [c for c in fatores_disponiveis if c != outcome_col]
+
+    if fatores_disponiveis:
+        fatores_selecionados = st.multiselect(
+            "Fatores para comparar",
+            fatores_disponiveis,
+            default=fatores_disponiveis,
+            key="fatores_selecionados",
+        )
+
+        if fatores_selecionados:
+            df_fatores = factor_analysis(df_filtered, outcome_col, valor_positivo, fatores_selecionados)
+            fig3 = px.bar(
+                df_fatores,
+                x="Fator",
+                y="Taxa (%)",
+                color="Grupo",
+                barmode="group",
+                title=f"Taxa de '{outcome_col} = {valor_positivo}' por fator (0 = nao tem, 1 = tem)",
+            )
+            st.plotly_chart(fig3, use_container_width=True)
+    else:
+        st.info("Nenhuma coluna numerica binaria (0/1) encontrada para comparar.")
 
 st.subheader("Dados")
 st.dataframe(df_filtered, use_container_width=True)
