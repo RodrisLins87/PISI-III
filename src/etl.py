@@ -1,4 +1,6 @@
-﻿import pandas as pd
+﻿import re
+
+import pandas as pd
 
 
 def load_data(file):
@@ -65,6 +67,24 @@ def get_binary_outcome_column(df, categorical_cols):
 
 def get_binary_numeric_columns(df, numeric_cols):
     return [col for col in numeric_cols if df[col].nunique() == 2]
+
+
+def drop_id_columns(df):
+    padrao_id = re.compile(r"(?:^|[ _])id(?:[ _]|$)|id$", re.IGNORECASE)
+    colunas_id = [col for col in df.columns if padrao_id.search(col.strip())]
+    return df.drop(columns=colunas_id, errors="ignore")
+
+
+def get_comparable_factor_columns(df, categorical_cols, numeric_cols, outcome_col, max_categories=10):
+    binarias_numericas = get_binary_numeric_columns(df, numeric_cols)
+
+    categoricas_comparaveis = [
+        col
+        for col in categorical_cols
+        if col != outcome_col and 1 < df[col].nunique() <= max_categories
+    ]
+
+    return binarias_numericas + categoricas_comparaveis
 
 
 def factor_analysis(df, outcome_col, positive_value, factor_cols):

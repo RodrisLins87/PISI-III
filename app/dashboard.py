@@ -12,14 +12,16 @@ from src.etl import (
     get_column_types,
     get_binary_outcome_column,
     get_binary_numeric_columns,
+    get_comparable_factor_columns,
+    drop_id_columns,
     factor_analysis,
     translate_columns,
 )
 
-st.set_page_config(page_title="Dashboard", layout="wide")
+st.set_page_config(page_title="Analise de Absenteismo", layout="wide")
 
-st.title("Dashboard Interativo")
-st.caption("Versao inicial (MVP)")
+st.title("Dashboard de Analise de Absenteismo em Consultas Medicas")
+st.caption("Exploracao dos fatores associados a falta em consultas agendadas.")
 
 uploaded_file = st.sidebar.file_uploader("Envie seu dataset (CSV ou Excel)", type=["csv", "xlsx", "xls"])
 
@@ -36,6 +38,7 @@ else:
 
 df = basic_clean(df_raw)
 df = translate_columns(df)
+df = drop_id_columns(df)
 col_types = get_column_types(df)
 
 st.sidebar.header("Filtros")
@@ -61,51 +64,64 @@ for col in col_types["datetime"]:
             start, end = pd.to_datetime(selected_dates[0]), pd.to_datetime(selected_dates[1])
             df_filtered = df_filtered[df_filtered[col].between(start, end)]
 
-st.subheader("Resumo")
+outcome_col = get_binary_outcome_column(df, col_types["categorical"])
+
+st.subheader("Indicadores Gerais")
 kpi_cols = st.columns(4)
 
-kpi_cols[0].metric("Linhas (filtrado)", f"{len(df_filtered):,}".replace(",", "."))
-kpi_cols[1].metric("Linhas (total)", f"{len(df):,}".replace(",", "."))
+kpi_cols[0].metric("Registros (filtrado)", f"{len(df_filtered):,}".replace(",", "."))
+kpi_cols[1].metric("Registros (total)", f"{len(df):,}".replace(",", "."))
 
-outcome_col = get_binary_outcome_column(df, col_types["categorical"])
 if outcome_col:
     valor_ref = df_filtered[outcome_col].value_counts().idxmax()
     taxa = (df_filtered[outcome_col] == valor_ref).mean() * 100
-    kpi_cols[2].metric(f"{outcome_col} = {valor_ref}", f"{taxa:.1f}%")
-elif col_types["numeric"]:
-    primeira_num = col_types["numeric"][0]
-    kpi_cols[2].metric(f"Media de {primeira_num}", f"{df_filtered[primeira_num].mean():.2f}")
+    kpi_cols[2].metric(f"Taxa de '{outcome_col} = {valor_ref}'", f"{taxa:.1f}%")
 
 if col_types["numeric"]:
     primeira_num = col_types["numeric"][0]
-    kpi_cols[3].metric(f"Media de {primeira_num}", f"{df_filtered[primeira_num].mean():.2f}")
+    kpi_cols[3].metric(f"Media de {primeira_num}", f"{df_filtered[primeira_num].mean():.1f}")
 
-st.subheader("Visualizacoes")
-col_a, col_b = st.columns(2)
+st.divider()
 
-if col_types["categorical"]:
-    with col_a:
-        cat_col = st.selectbox("Coluna categorica", col_types["categorical"], key="cat_chart")
-        contagem = df_filtered[cat_col].value_counts().reset_index()
-        contagem.columns = [cat_col, "quantidade"]
-        fig1 = px.bar(contagem, x=cat_col, y="quantidade", title=f"Distribuicao de {cat_col}")
-        st.plotly_chart(fig1, use_container_width=True)
+st.subheader("Distribuicao por Desfecho (Diagrama de Caixas)")
+st.caption(
+    "Compara a distribuicao de uma variavel numerica entre os grupos do desfecho, "
+    "evidenciando diferencas de mediana, dispersao e outliers."
+)
 
-with col_b:
-    if col_types["datetime"] and col_types["numeric"]:
-        date_col = col_types["datetime"][0]
-        num_col = st.selectbox("Coluna numerica", col_types["numeric"], key="num_chart")
-        serie = df_filtered.groupby(date_col)[num_col].sum().reset_index()
-        fig2 = px.line(serie, x=date_col, y=num_col, title=f"{num_col} ao longo do tempo")
-        st.plotly_chart(fig2, use_container_width=True)
-    elif col_types["numeric"]:
-        num_col = st.selectbox("Coluna numerica", col_types["numeric"], key="num_chart")
-        fig2 = px.histogram(df_filtered, x=num_col, title=f"Distribuicao de {num_col}")
-        st.plotly_chart(fig2, use_container_width=True)
+colunas_continuas = [
+    c for c in col_types["numeric"] if c not in get_binary_numeric_columns(df, col_types["numeric"])
+]
+
+if outcome_col and colunas_continuas:
+    col_box, col_config = st.columns([3, 1])
+
+    with col_config:
+        num_col_box = st.selectbox("Variavel numerica", colunas_continuas, key="box_numeric")
+        mostrar_pontos = st.checkbox("Mostrar pontos (outliers)", value=False)
+
+    with col_box:
+        fig_box = px.box(
+            df_filtered,
+            x=outcome_col,
+            y=num_col_box,
+            color=outcome_col,
+            points="outliers" if mostrar_pontos else False,
+            title=f"{num_col_box} por {outcome_col}",
+        )
+        st.plotly_chart(fig_box, width='stretch')
+else:
+    st.info("E necessario haver uma coluna de desfecho binario e uma coluna numerica continua para gerar o diagrama de caixas.")
+
+st.divider()
+
+st.subheader("Taxa do Desfecho por Fator")
+st.caption(
+    "Compara a taxa do desfecho entre os grupos de cada fator selecionado "
+    "(ex: genero, condicoes de saude, indicadores de vulnerabilidade social)."
+)
 
 if outcome_col:
-    st.subheader(f"Analise por fator - {outcome_col}")
-
     valores_desfecho = sorted(df[outcome_col].dropna().unique().tolist())
     valor_positivo = st.selectbox(
         f"Valor de '{outcome_col}' considerado o desfecho de interesse",
@@ -114,8 +130,9 @@ if outcome_col:
         key="valor_positivo",
     )
 
-    fatores_disponiveis = get_binary_numeric_columns(df, col_types["numeric"])
-    fatores_disponiveis = [c for c in fatores_disponiveis if c != outcome_col]
+    fatores_disponiveis = get_comparable_factor_columns(
+        df, col_types["categorical"], col_types["numeric"], outcome_col
+    )
 
     if fatores_disponiveis:
         fatores_selecionados = st.multiselect(
@@ -127,17 +144,32 @@ if outcome_col:
 
         if fatores_selecionados:
             df_fatores = factor_analysis(df_filtered, outcome_col, valor_positivo, fatores_selecionados)
-            fig3 = px.bar(
+            fig_fatores = px.bar(
                 df_fatores,
                 x="Fator",
                 y="Taxa (%)",
                 color="Grupo",
                 barmode="group",
-                title=f"Taxa de '{outcome_col} = {valor_positivo}' por fator (0 = nao tem, 1 = tem)",
+                title=f"Taxa de '{outcome_col} = {valor_positivo}' por fator",
             )
-            st.plotly_chart(fig3, use_container_width=True)
+            st.plotly_chart(fig_fatores, width='stretch')
     else:
-        st.info("Nenhuma coluna numerica binaria (0/1) encontrada para comparar.")
+        st.info("Nenhum fator comparavel (binario ou categorico de baixa cardinalidade) foi encontrado.")
+else:
+    st.info("Nenhuma coluna de desfecho binario foi identificada no dataset.")
+
+st.divider()
+
+st.subheader("Exploracao Livre")
+
+if col_types["categorical"]:
+    cat_col = st.selectbox("Distribuicao de coluna categorica", col_types["categorical"], key="cat_chart")
+    contagem = df_filtered[cat_col].value_counts().reset_index()
+    contagem.columns = [cat_col, "quantidade"]
+    fig_livre = px.bar(contagem, x=cat_col, y="quantidade", title=f"Distribuicao de {cat_col}")
+    st.plotly_chart(fig_livre, width='stretch')
+
+st.divider()
 
 st.subheader("Dados")
-st.dataframe(df_filtered, use_container_width=True)
+st.dataframe(df_filtered, width='stretch')
