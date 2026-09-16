@@ -61,3 +61,37 @@ Correlação (PriorNoShows x Falta): r=0,084, p-valor<0,001
 ![Taxa de falta conforme histórico do paciente](graficos/fig03_falta_historico.png)
 
 *Figura 3. Taxa de falta conforme histórico prévio do paciente.*
+
+
+## 5. SMS: Efeito Bruto vs Efeito Controlado (Paradoxo de Simpson)
+
+**Sem controle:** Não recebeu SMS: 16,7% | Recebeu SMS: 27,6%
+→ Olhando assim, *parece* que SMS aumenta a falta.
+
+**Controlando pela faixa de antecedência** (comparação dentro do mesmo nível de espera):
+
+| Antecedência | Sem SMS | Com SMS |
+|---|---|---|
+| 2-3 dias | 24,0% | 21,3% |
+| 4-7 dias | 27,1% | 24,0% |
+| 8-14 dias | 33,8% | 28,1% |
+| 15-30 dias | 36,9% | 29,8% |
+| 31-60 dias | 38,4% | 31,5% |
+| 60+ dias | 33,9% | 25,5% |
+
+**Dentro de cada faixa de antecedência, quem recebe SMS falta MENOS.** Isso é um **Paradoxo de Simpson**: a variável escondida (antecedência) invertia o resultado agregado, porque quem recebe SMS é, em média, quem tem mais antecedência (correlação SMS x DayDifference = 0,40) — e é esse grupo que mais falta de qualquer forma. Controlando esse fator, o SMS tem sim um efeito protetor real.
+
+![Efeito do SMS controlando pela antecedência](graficos/fig04_sms_controlado.png)
+
+*Figura 4. Efeito do SMS na falta, controlando pela antecedência (Paradoxo de Simpson).*
+
+## 6. Gênero
+
+- Feminino: 20,3%
+- Masculino: 20,0%
+
+Qui-quadrado: chi2=1,9, p-valor=0,173 → **NÃO significativo**
+
+![Taxa de falta por gênero](graficos/fig05_falta_genero.png)
+
+*Figura 5. Taxa de falta por gênero.*
