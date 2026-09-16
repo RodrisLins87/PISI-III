@@ -1,0 +1,24 @@
+==============================================================================
+ANÁLISE EXPLORATÓRIA DE DADOS (EDA) — VittaFlow
+Previsão de Absenteísmo em Consultas Médicas
+==============================================================================
+
+1. FONTE E QUALIDADE DOS DADOS
+------------------------------------------------------------------------------
+Fonte original: Kaggle - Medical Appointment No Shows
+https://www.kaggle.com/datasets/joniarroba/noshowappointments
+Período: abril a junho de 2016 | Origem: Vitória, Espírito Santo, Brasil
+Registros originais: 110527
+Valores nulos encontrados: 0
+Linhas duplicadas encontradas: 0
+Registros com idade negativa removidos: 1
+Registros na base final: 110526
+Pacientes únicos: 62298
+Média de consultas por paciente: 1.77
+Idade: mínima=0, máxima=115 (7 registros acima de 100 anos, plausíveis, não outliers de digitação)
+
+2. DISTRIBUIÇÃO DA VARIÁVEL ALVO
+------------------------------------------------------------------------------
+Compareceu: 88207 (79.8%)
+Faltou: 22319 (20.2%)
+Percentual consistente com o reportado por Pereira (2020) na mesma base.
