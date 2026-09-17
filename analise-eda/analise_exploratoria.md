@@ -95,3 +95,22 @@ Qui-quadrado: chi2=1,9, p-valor=0,173 → **NÃO significativo**
 ![Taxa de falta por gênero](graficos/fig05_falta_genero.png)
 
 *Figura 5. Taxa de falta por gênero.*
+
+## 7. Faixa Etária
+
+| Faixa | % de falta |
+|---|---|
+| 0-5 anos | 18,6% |
+| 6-12 anos | 22,8% |
+| **13-18 anos** | **26,1%** |
+| 19-30 anos | 24,7% |
+| 31-45 anos | 21,4% |
+| 46-60 anos | 17,8% |
+| 60+ anos | 15,2% |
+
+Correlação idade x falta: r=-0,060, p-valor<0,001
+
+![Taxa de falta por faixa etária](graficos/fig06_falta_idade.png)
+
+*Figura 6. Taxa de falta por faixa etária.*
+
