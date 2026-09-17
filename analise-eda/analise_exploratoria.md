@@ -114,3 +114,26 @@ Correlação idade x falta: r=-0,060, p-valor<0,001
 
 *Figura 6. Taxa de falta por faixa etária.*
 
+## 8. Condições de Saúde e Socioeconômicas
+
+| Condição | Sem | Com | p-valor | Significativo? |
+|---|---|---|---|---|
+| Hipertensão | 20,9% | 17,3% | <0,001 | SIM |
+| Diabetes | 20,4% | 18,0% | <0,001 | SIM |
+| Alcoolismo | 20,2% | 20,1% | 0,965 | NÃO |
+| Deficiência | 20,2% | 18,2% | 0,017 | SIM |
+| Bolsa Família | 19,8% | 23,7% | <0,001 | SIM |
+
+**Efeito cumulativo (total de condições):**
+
+| Nº de condições | % de falta | N |
+|---|---|---|
+| 0 | 20,9% | 84.114 |
+| 1 | 17,9% | 18.123 |
+| 2 | 17,9% | 7.658 |
+| 3 | 15,4% | 618 |
+| 4 | 30,8% | 13 (amostra pequena, pouco conclusivo) |
+
+![Taxa de falta por condições de saúde](graficos/fig07_falta_condicoes.png)
+
+*Figura 7. Taxa de falta conforme condições de saúde e socioeconômicas.*
