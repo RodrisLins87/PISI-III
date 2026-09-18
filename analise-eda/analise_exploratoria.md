@@ -191,3 +191,13 @@ Teste qui-quadrado (omnibus, 80 graus de liberdade): chi2=492,0, p-valor<0,001 �
 ![Matriz de correlação entre as variáveis](graficos/fig10_correlacao.png)
 
 *Figura 10. Matriz de correlação entre as variáveis (coeficiente de Pearson).*
+
+## 12. Interpretação Consolidada
+
+Fatores individuais fixos do paciente, como o gênero, têm baixo ou nenhum poder explicativo sobre a falta, visto que o gênero não é estatisticamente significativo. Já fatores estruturais e comportamentais, como o tempo de antecedência do agendamento, histórico prévio de faltas e mesmo o recebimento de SMS, quando corretamente controlado, se mostram determinantes.
+
+Isso reforça a fundamentação teórica do trabalho: o absenteísmo está mais associado à dimensão de **"acomodação"** do acesso à saúde (PENCHANSKY e THOMAS, 1981), em como o sistema organiza o agendamento, do que as características fixas dos pacientes. Corrobora também Dantas et al. (2016), que aponta o *lead time* e o histórico de faltas como os fatores mais fortes da literatura.
+
+Para a etapa de classificação (PP2), espera-se que `DayDifference`, `PriorNoShows` e `SMS_received` bem modelado, evitando o viés do Paradoxo de Simpson, sejam as variáveis de maior peso preditivo.
+
+---
