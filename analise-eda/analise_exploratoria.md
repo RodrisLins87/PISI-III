@@ -137,3 +137,57 @@ Correlação idade x falta: r=-0,060, p-valor<0,001
 ![Taxa de falta por condições de saúde](graficos/fig07_falta_condicoes.png)
 
 *Figura 7. Taxa de falta conforme condições de saúde e socioeconômicas.*
+
+## 9. Dia da Semana da Consulta
+
+| Dia | % de falta |
+|---|---|
+| Segunda | 20,6% |
+| Terça | 20,1% |
+| Quarta | 19,7% |
+| Quinta | 19,4% |
+| Sexta | 21,2% |
+| Sábado | 23,1% |
+
+![Taxa de falta por dia da semana](graficos/fig08_falta_dia_semana.png)
+
+*Figura 8. Taxa de falta por dia da semana da consulta.*
+
+## 10. Variação Geográfica (Bairro)
+
+Faixa observada (mín. 200 consultas por bairro): **14,6% a 28,9%**
+
+Teste qui-quadrado (omnibus, 80 graus de liberdade): chi2=492,0, p-valor<0,001 → **SIM significativo**
+
+**Top 5 piores bairros:**
+
+| Bairro | % de falta | N |
+|---|---|---|
+| Santos Dumont | 28,9% | 1.276 |
+| Santa Cecília | 27,5% | 448 |
+| Santa Clara | 26,5% | 506 |
+| Itararé | 26,3% | 3.514 |
+| Jesus de Nazareth | 24,4% | 2.853 |
+
+![Top 10 bairros com maior taxa de falta](graficos/fig09_top_bairros.png)
+
+*Figura 9. 10 bairros com maior taxa de falta (mínimo 200 consultas).*
+
+## 11. Matriz de Correlação Completa
+
+| Variável | Correlação com Falta |
+|---|---|
+| DayDifference | +0,186 |
+| SMS_received | +0,126 |
+| PriorNoShows | +0,084 |
+| Scholarship | +0,029 |
+| Alcoholism | -0,000 |
+| HandicapBin | -0,007 |
+| Diabetes | -0,015 |
+| PriorAppointments | -0,036 |
+| Hypertension | -0,036 |
+| Age | -0,060 |
+
+![Matriz de correlação entre as variáveis](graficos/fig10_correlacao.png)
+
+*Figura 10. Matriz de correlação entre as variáveis (coeficiente de Pearson).*
