@@ -27,17 +27,14 @@ with st.sidebar:
                              default=["Feminino", "Masculino"], key="f_genero")
     faixas = st.multiselect("Faixa etária", ORDEM_IDADE, default=ORDEM_IDADE, key="f_idade")
     data_min, data_max = df["DataConsulta"].min(), df["DataConsulta"].max()
-    periodo = st.date_input("Período da consulta", value=(data_min, data_max),
-                            min_value=data_min, max_value=data_max,
-                            format="DD/MM/YYYY", key="f_periodo")
+    # Slider (e não date_input de intervalo): o date_input novo do Streamlit traz atalhos
+    # "Past week / Past month..." relativos a HOJE, que não fazem sentido numa base de 2016.
+    periodo = st.slider("Período da consulta", min_value=data_min, max_value=data_max,
+                        value=(data_min, data_max), format="DD/MM/YYYY", key="f_periodo_slider")
     st.caption("Fonte: Medical Appointment No Shows (Kaggle) — "
                "110.527 consultas em Vitória-ES, abr–jun/2016.")
 
-# date_input devolve 1 data enquanto o usuário ainda está escolhendo o intervalo
-if isinstance(periodo, (list, tuple)) and len(periodo) == 2:
-    inicio, fim = periodo
-else:
-    inicio, fim = data_min, data_max
+inicio, fim = periodo
 
 filtro = (df["GeneroNome"].isin(generos)
           & df["FaixaEtaria"].isin(faixas)
