@@ -1,8 +1,6 @@
 """
 PÁGINA 6 — BAIRROS
 
-Pergunta que a página responde:
-    Onde se falta mais?
 """
 
 import streamlit as st
@@ -10,7 +8,6 @@ import streamlit as st
 from utils.dados import base_filtrada, taxa_falta
 from utils.graficos import barras_taxa, mostrar, num, pct
 
-# 1. Carregamento dos dados respeitando os filtros globais
 df = base_filtrada()
 
 # 2. Cabeçalho principal com hierarquia clara
