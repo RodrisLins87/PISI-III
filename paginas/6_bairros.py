@@ -123,7 +123,35 @@ mostrar(
     "Ver dados dos 10 melhores bairros",
 )
 
-# ---------------- 5. Bloco Explicativo e Metodológico ----------------
+st.divider()
+
+# ---------------- 5. Comparador e Busca Individual ----------------
+st.subheader("🔍 Consultar / Comparar bairros específicos")
+st.markdown("Selecione um ou mais bairros para analisar seus indicadores de forma isolada:")
+
+lista_bairros = sorted(tabela_filtrada["BairroExibicao"].unique())
+bairros_selecionados = st.multiselect(
+    "Escolha os bairros:",
+    options=lista_bairros,
+    placeholder="Digite ou selecione o nome do bairro...",
+)
+
+if bairros_selecionados:
+    df_busca = tabela_filtrada[tabela_filtrada["BairroExibicao"].isin(bairros_selecionados)].copy()
+    df_busca_exibicao = df_busca[["BairroExibicao", "consultas", "faltas", "taxa"]].copy()
+    df_busca_exibicao.columns = ["Bairro", "Total Consultas", "Faltas", "Taxa de Falta"]
+    df_busca_exibicao["Taxa de Falta"] = df_busca_exibicao["Taxa de Falta"].apply(pct)
+    
+    st.dataframe(df_busca_exibicao, use_container_width=True, hide_index=True)
+
+# ---------------- 6. Tabela Completa Expandível ----------------
+with st.expander("📋 Ver lista completa de todos os bairros qualificados"):
+    df_completo = tabela_filtrada[["BairroExibicao", "consultas", "faltas", "taxa"]].copy()
+    df_completo.columns = ["Bairro", "Consultas Registradas", "Total Faltas", "Taxa de Falta (%)"]
+    df_completo["Taxa de Falta (%)"] = df_completo["Taxa de Falta (%)"].apply(pct)
+    st.dataframe(df_completo, use_container_width=True, hide_index=True)
+
+# ---------------- 7. Bloco Explicativo e Metodológico ----------------
 st.info(
     "**Por que usamos um limite de amostra mínima?**\n\n"
     "Bairros com volume muito pequeno de consultas (ex: 10 ou 15 consultas) podem apresentar "
