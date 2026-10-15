@@ -2,7 +2,7 @@ import plotly.express as px
 import streamlit as st
 
 from utils.dados import ORDEM_ANTECEDENCIA, base_filtrada, taxa_falta
-from utils.graficos import AZUL, LARANJA, estilizar, mostrar
+from utils.graficos import AZUL, LARANJA, barras_agrupadas, dec ,estilizar, mostrar
 
 ORDEM_SMS = ["Sem SMS", "Com SMS"]
 
@@ -44,3 +44,40 @@ fig2.update_xaxes(title_text="Dias entre marcar e a consulta")
 mostrar(fig2, envio.rename(columns={"pct_sms": "% que recebeu SMS"}))
 st.markdown("Consultas marcadas para o mesmo dia ou o dia seguinte **nunca** recebem SMS, e são justamente "
             "as que menos faltam (ver página *Antecedência*). Isso puxa a taxa do grupo \"Sem SMS\" para baixo.")
+
+
+# ---------------- Passo 3: comparação justa ----------------
+st.subheader("3. Comparando dentro da mesma faixa de antecedência")
+com_sms_possivel = df[df["Antecedencia"] >= 2]
+tabela = (com_sms_possivel.groupby(["FaixaAntecedencia", "SMS"], observed=True)["Falta"]
+          .agg(consultas="count", faltas="sum").reset_index())
+tabela["taxa"] = (tabela["faltas"] / tabela["consultas"] * 100).round(1)
+
+if tabela.empty:
+    st.info("Não há consultas com 2+ dias de antecedência nos filtros escolhidos.")
+    st.stop()
+
+mostrar(barras_agrupadas(tabela, "FaixaAntecedencia", "SMS", ORDEM_SMS,
+                         "Dias entre marcar e a consulta"), tabela)
+
+pivo = tabela.pivot(index="FaixaAntecedencia", columns="SMS", values="taxa").dropna()
+if {"Sem SMS", "Com SMS"} <= set(pivo.columns) and len(pivo):
+    menores = int((pivo["Com SMS"] < pivo["Sem SMS"]).sum())
+    reducao = (pivo["Sem SMS"] - pivo["Com SMS"]).mean()
+    if reducao > 0:
+        st.success(
+            f"Em **{menores} de {len(pivo)}** faixas de antecedência, quem recebeu SMS faltou **menos**, "
+            f"uma redução média de **{dec(reducao)} pontos percentuais**."
+        )
+    else:
+        st.warning(
+            f"Com os filtros escolhidos, o SMS não reduziu a falta: em **{menores} de {len(pivo)}** faixas "
+            f"a taxa foi menor com SMS, e a diferença média foi de **{dec(reducao)} pontos percentuais**."
+        )
+
+with st.expander("O que é o Paradoxo de Simpson?"):
+    st.markdown(
+        "É quando uma tendência que aparece nos dados agrupados **se inverte** quando olhamos "
+        "dentro de cada subgrupo. Aqui, a variável escondida é a **antecedência**: ela influencia "
+        "ao mesmo tempo quem recebe SMS e quem falta. Controlando por ela, o SMS tem efeito protetor."
+    )
