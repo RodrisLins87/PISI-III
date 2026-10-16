@@ -1,4 +1,3 @@
-```python
 """
 PÁGINA 2 — ANTECEDÊNCIA DO AGENDAMENTO
 
@@ -210,4 +209,3 @@ st.caption(
     f"Base analisada nesta tela: {num(len(df))} consultas. "
     "Os valores são recalculados conforme os filtros da barra lateral."
 )
-```
