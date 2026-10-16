@@ -8,8 +8,9 @@ Pergunta que a página responde:
 import pandas as pd
 import streamlit as st
 from scipy import stats
+
 from utils.dados import ORDEM_IDADE, base_filtrada, taxa_falta
-from utils.graficos import barras_taxa, dec, mostrar, num, pct
+from utils.graficos import barras_agrupadas, barras_taxa, dec, mostrar, num, pct
 
 df = base_filtrada()
 
@@ -44,4 +45,32 @@ if df["GeneroNome"].nunique() == 2:
     cols[-1].metric("Teste qui-quadrado (p-valor)", dec(p, 3))
     conclusao = " Gênero, sozinho, não ajuda a prever faltas." if p >= 0.05 else ""
     st.markdown(f"A diferença entre gêneros {signif} estatisticamente significativa (α = 0,05).{conclusao}")
+
+
+st.divider()
+
+# ---------------- Condições ----------------
+st.subheader("Condições de saúde e programa social")
+condicoes = {
+    "Hipertensão": df["Hipertensao"] > 0,
+    "Diabetes": df["Diabetes"] > 0,
+    "Alcoolismo": df["Alcoolismo"] > 0,
+    "Deficiência": df["Deficiencia"] > 0,
+    "Bolsa Família": df["BolsaFamilia"] > 0,
+}
+linhas = []
+for nome, tem in condicoes.items():
+    for rotulo, mascara in [("Não tem", ~tem), ("Tem", tem)]:
+        sub = df.loc[mascara, "Falta"]
+        if len(sub):
+            linhas.append({"Condição": nome, "Grupo": rotulo, "consultas": len(sub),
+                           "faltas": int(sub.sum()), "taxa": round(sub.mean() * 100, 1)})
+cond = pd.DataFrame(linhas)
+mostrar(barras_agrupadas(cond, "Condição", "Grupo", ["Não tem", "Tem"]), cond)
+st.markdown(
+    "**Na base completa:**\n\n"
+    "- Pacientes **com hipertensão ou diabetes faltam menos**: provavelmente por fazerem acompanhamento contínuo.\n"
+    "- Beneficiários do **Bolsa Família faltam mais**: pode refletir barreiras de acesso (transporte, trabalho).\n"
+    "- Alcoolismo praticamente não muda a taxa."
+)
  
