@@ -1,0 +1,34 @@
+{
+ "modelo_final": "Random Forest + SMOTE",
+ "ic95_bootstrap_por_paciente": {
+  "auc": [
+   0.7214556896782809,
+   0.7376171664723281
+  ],
+  "recall_falta": [
+   0.6857850136947463,
+   0.715976510531408
+  ],
+  "precisao_falta": [
+   0.31769243207513276,
+   0.3374476848363337
+  ],
+  "f1_falta": [
+   0.4358155905674773,
+   0.4579132229168708
+  ]
+ },
+ "matriz_confusao": {
+  "verdadeiro_negativo": 11054,
+  "falso_positivo": 6508,
+  "falso_negativo": 1354,
+  "verdadeiro_positivo": 3164
+ },
+ "n_treino": 88441,
+ "n_teste": 22080,
+ "pacientes_treino": 49838,
+ "pacientes_teste": 12460,
+ "taxa_falta_teste": 20.46195652173913,
+ "profundidade_dt": 6,
+ "profundidade_rf": 12
+}
