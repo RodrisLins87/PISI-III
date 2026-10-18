@@ -84,16 +84,23 @@ A etapa de mineração de dados tem como objetivo responder às perguntas de pes
 - **Objetivo:** Identificar perfis e subgrupos distintos de pacientes com base em características demográficas, socioeconômicas, localização e histórico de saúde.
 - **Técnica:** Agrupamento por **K-Means**.
 - **Validação e Ajuste:** Definição da quantidade ideal de clusters por meio do **Método do Cotovelo (*Elbow Method*)** e gráficos de **Silhueta (*Silhouette Score*)**.
+- **Configuração:** K-Means com k = 6, utilizando um registro por paciente.
+- **Validação complementar:** Avaliação da margem de erro com intervalo de confiança de 95% e da estabilidade dos agrupamentos.
+- **Comparação:** Verificação dos resultados com os métodos Ward e K-Prototypes.
 
 ### 🎯 Classificação (PP2 - Aprendizado Supervisionado)
 - **Objetivo:** Estimar a probabilidade individual de falta ou comparecimento do paciente antes do atendimento agendado.
 - **Metodologia:** Experimentos de classificação avaliando diferentes técnicas de aprendizado supervisionado, combinadas ao tratamento do desbalanceamento de classes por reamostragem sintética (SMOTE).
+- **Modelos avaliados:** Regressão Logística, Árvore de Decisão e Random Forest, com e sem SMOTE.
+- **Divisão dos dados:** Conjuntos de treino e teste separados por paciente.
+- **Interpretabilidade:** Utilização de SHAP para interpretar o modelo final.
+- **Incerteza:** Estimativa da margem de erro por bootstrap.
 
 ---
 
 ## 📊 5. Dashboard Interativo
 
-Painel em **Streamlit + Plotly** que apresenta os achados da EDA para gestores clínicos. Todos os números são calculados em tempo real a partir da base original do Kaggle, sem nenhum valor digitado à mão.
+Painel em **Streamlit + Plotly** que apresenta os achados da EDA para gestores clínicos. As páginas de análise exploratória calculam seus indicadores a partir da base original do Kaggle. As páginas de Machine Learning utilizam os resultados gerados pelo script `ml/treinar.py`, armazenados em `ml/resultados/`.
 
 ### ▶️ Como rodar
 
@@ -105,6 +112,17 @@ streamlit run app.py
 
 O navegador abre sozinho em `http://localhost:8501`.
 
+### 🤖 Como gerar os resultados de Machine Learning
+
+As páginas 7 e 8 utilizam arquivos gerados pelo script de treinamento. Para gerar ou atualizar esses resultados, execute os comandos a partir da pasta que contém o diretório `ml/`:
+
+```bash
+pip install -r ml/requirements-ml.txt
+python ml/treinar.py
+```
+
+O treinamento pode levar alguns minutos. Os arquivos gerados são armazenados em `ml/resultados/`.
+
 ### 🧭 Páginas
 
 | # | Página | Pergunta que responde |
@@ -115,6 +133,8 @@ O navegador abre sozinho em `http://localhost:8501`.
 | 4 | Perfil do paciente | Idade, gênero e condições de saúde mudam a falta? |
 | 5 | Histórico e dia da semana | Quem já faltou falta de novo? Há dia pior? |
 | 6 | Bairros | Onde se falta mais? |
+| 7 | Perfis de pacientes (ML) | Dá para identificar perfis de pacientes? |
+| 8 | Previsão de faltas (ML) | Dá para prever quem vai faltar? |
 
 ### 🎛️ Filtros (barra lateral, valem para todas as páginas)
 - **Gênero**
@@ -132,13 +152,19 @@ dashboard/
 ├── utils/
 │   ├── dados.py                → leitura e limpeza da base (compartilhado)
 │   └── graficos.py             → cores e estilo padrão dos gráficos (compartilhado)
+├── ml/
+│   ├── treinar.py
+│   ├── requirements-ml.txt
+│   └── resultados/
 └── paginas/
     ├── 1_visao_geral.py
     ├── 2_antecedencia.py
     ├── 3_sms.py
     ├── 4_perfil_paciente.py
     ├── 5_historico.py
-    └── 6_bairros.py
+    ├── 6_bairros.py
+    ├── 7_perfis.py
+    └── 8_previsao.py
 ```
 
 ### 📏 Regras do grupo
@@ -146,6 +172,7 @@ dashboard/
 2. **Não mexer em `utils/`** sem avisar no grupo: todas as páginas dependem desses arquivos.
 3. **Usar as funções de `utils/graficos.py`** (`barras_taxa`, `barras_agrupadas`, `mostrar`) para manter o mesmo visual. Cores: 1 série = azul; 2 séries = azul e laranja.
 4. **Testar antes de subir:** rodar o app, abrir a sua página e mexer nos filtros (inclusive desmarcar tudo) para ver se nada quebra.
+5. **Resultados de Machine Learning:** após alterar o processo de treinamento, execute `ml/treinar.py` novamente e verifique se os arquivos gerados continuam compatíveis com as páginas 7 e 8.
 
 ---
 
