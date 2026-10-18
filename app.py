@@ -29,12 +29,16 @@ with st.sidebar:
     data_min, data_max = df["DataConsulta"].min(), df["DataConsulta"].max()
     # Slider (e não date_input de intervalo): o date_input novo do Streamlit traz atalhos
     # "Past week / Past month..." relativos a HOJE, que não fazem sentido numa base de 2016.
-    periodo = st.slider("Período da consulta", min_value=data_min, max_value=data_max,
-                        value=(data_min, data_max), format="DD/MM/YYYY", key="f_periodo_slider")
+    periodo = st.date_input("Período da consulta", value=(data_min, data_max),
+                        min_value=data_min, max_value=data_max,
+                        format="DD/MM/YYYY", key="f_periodo")
     st.caption("Fonte: Medical Appointment No Shows (Kaggle) — "
                "110.527 consultas em Vitória-ES, abr–jun/2016.")
 
-inicio, fim = periodo
+if isinstance(periodo, (list, tuple)) and len(periodo) == 2:
+    inicio, fim = periodo
+else:
+    inicio, fim = data_min, data_max
 
 filtro = (df["GeneroNome"].isin(generos)
           & df["FaixaEtaria"].isin(faixas)
@@ -54,6 +58,8 @@ CATALOGO = [
     ("paginas/4_perfil_paciente.py", "Perfil do paciente", "🧑‍⚕️"),
     ("paginas/5_historico.py", "Histórico e dia da semana", "🔁"),
     ("paginas/6_bairros.py", "Bairros", "📍"),
+    ("paginas/7_perfis.py", "Perfis de pacientes (ML)", "🧩"),
+    ("paginas/8_previsao.py", "Previsão de faltas (ML)", "🤖"),
 ]
 paginas = [st.Page(arq, title=titulo, icon=icone)
            for arq, titulo, icone in CATALOGO if (PASTA / arq).exists()]
