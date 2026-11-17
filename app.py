@@ -61,6 +61,7 @@ CATALOGO = [
     ("paginas/6_bairros.py", "Bairros", "📍"),
     ("paginas/7_perfis.py", "Perfis de pacientes (ML)", "🧩"),
     ("paginas/8_previsao.py", "Previsão de faltas (ML)", "🤖"),
+    ("paginas/0_inicio.py", "Início", "🏠"),
 ]
 paginas = [st.Page(arq, title=titulo, icon=icone)
            for arq, titulo, icone in CATALOGO if (PASTA / arq).exists()]
