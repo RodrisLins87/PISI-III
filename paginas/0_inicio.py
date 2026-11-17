@@ -7,7 +7,7 @@ import streamlit as st
 from utils.dados import carregar_dados
 from utils.graficos import dec, num, pct
 
-RAIZ = Path(_file_).resolve().parent.parent
+RAIZ = Path(__file__).resolve().parent.parent
 RES = RAIZ / "ml" / "resultados"
 
 df = carregar_dados()
