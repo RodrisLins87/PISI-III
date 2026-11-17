@@ -8,7 +8,7 @@ import streamlit as st
 
 from utils.graficos import AZUL, LARANJA, TINTA_2, dec, estilizar, pct
 
-RAIZ = Path(_file_).resolve().parent.parent
+RAIZ = Path(__file__).resolve().parent.parent
 CSV = RAIZ / "data" / "KaggleV2-May-2016.csv"
 RES = RAIZ / "ml" / "resultados"
 SEMENTE = 42
