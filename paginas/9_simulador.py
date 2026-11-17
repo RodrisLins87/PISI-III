@@ -96,3 +96,86 @@ def treinar_modelo():
 
 
 modelo, risco_teste, bairros = treinar_modelo()
+
+# ---------------------------------------------------------------- formulário
+with st.form("simulador"):
+    st.subheader("Dados do paciente")
+    c1, c2, c3 = st.columns(3)
+    idade = c1.number_input("Idade", 0, 115, 30)
+    sexo = c2.radio("Sexo", ["Feminino", "Masculino"], horizontal=True)
+    bairro = c3.selectbox("Bairro da unidade", bairros,
+                          index=bairros.index("JARDIM CAMBURI") if "JARDIM CAMBURI" in bairros else 0)
+
+    c1, c2, c3, c4, c5 = st.columns(5)
+    bolsa = c1.checkbox("Bolsa Família")
+    hip = c2.checkbox("Hipertensão")
+    dia = c3.checkbox("Diabetes")
+    alc = c4.checkbox("Alcoolismo")
+    defic = c5.checkbox("Deficiência")
+
+    st.subheader("Histórico do paciente")
+    c1, c2 = st.columns(2)
+    n_ant = c1.number_input("Consultas anteriores", 0, 100, 0)
+    f_ant = c2.number_input("Faltas nessas consultas", 0, 100, 0)
+
+    st.subheader("Dados da consulta")
+    c1, c2, c3, c4 = st.columns(4)
+    lead = c1.number_input("Dias entre marcar e a consulta", 0, 180, 10)
+    hora = c2.slider("Hora em que foi marcada", 6, 21, 10)
+    dow = c3.selectbox("Dia da semana da consulta", DIAS)
+    sms = c4.checkbox("Recebeu SMS de lembrete")
+
+    enviar = st.form_submit_button("Calcular risco", type="primary")
+
+if not enviar:
+    st.info("Preencha os campos e clique em *Calcular risco*.")
+    st.stop()
+
+if f_ant > n_ant:
+    st.error("O número de faltas não pode ser maior que o de consultas anteriores.")
+    st.stop()
+
+entrada = pd.DataFrame([{
+    "Age": idade, "lead": lead, "hora_agend": hora,
+    "hist_n": n_ant, "hist_falta": f_ant, "hist_taxa": f_ant / n_ant if n_ant else 0.0,
+    "M": int(sexo == "Masculino"), "Scholarship": int(bolsa), "Hipertensao": int(hip),
+    "Diabetes": int(dia), "Alcoholism": int(alc), "handcap_bin": int(defic),
+    "SMS_received": int(sms), "dow": DIAS.index(dow), "Neighbourhood": bairro}])
+
+risco = float(modelo.predict_proba(entrada)[0, 1])
+posicao = float((risco_teste < risco).mean() * 100)
+
+# ---------------------------------------------------------------- resultado
+st.divider()
+st.subheader("Resultado")
+alto = risco >= 0.5
+c1, c2, c3 = st.columns(3)
+c1.metric("Pontuação de risco", pct(risco * 100))
+c2.metric("Classificação", "Risco ALTO" if alto else "Risco baixo")
+c3.metric("Mais arriscada que", pct(posicao, 0) + " das consultas",
+          help="Comparação com as consultas reais do conjunto de teste.")
+
+f = go.Figure(go.Indicator(
+    mode="gauge+number", value=risco * 100, number={"suffix": "%", "valueformat": ".1f"},
+    gauge={"axis": {"range": [0, 100]},
+           "bar": {"color": LARANJA if alto else AZUL},
+           "threshold": {"line": {"color": TINTA_2, "width": 3}, "value": 50}}))
+estilizar(f, titulo_y="", altura=260)
+st.plotly_chart(f, theme=None, config={"displayModeBar": False})
+
+if alto:
+    st.warning("O modelo *prevê falta* para esta consulta. Sugestão: reforçar o lembrete "
+               "(ligação ou SMS extra) ou oferecer um horário mais próximo.")
+else:
+    st.success("O modelo *prevê comparecimento* para esta consulta.")
+
+aviso = ("A linha no medidor marca o limite de 50%, o mesmo usado na avaliação da página 8. "
+         "Como o modelo foi treinado com SMOTE (que equilibra faltas e comparecimentos), a pontuação "
+         "*não é a chance exata* de faltar: ela serve para *ordenar* quem tem mais risco. "
+         "Por isso a comparação com as consultas reais é a leitura mais segura.")
+if (RES / "modelos_teste.csv").exists():
+    m = pd.read_csv(RES / "modelos_teste.csv")
+    m = m[m["final"] == 1].iloc[0]
+    aviso += (f" No teste, o modelo encontrou cerca de {round(m['recall_falta'] * 10)} em cada 10 faltas, "
+              f"com precisão de {dec(m['precisao_falta'], 2)} (muitos falsos alertas).")
+st.caption(aviso)
