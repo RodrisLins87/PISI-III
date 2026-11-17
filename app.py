@@ -52,6 +52,7 @@ st.session_state["df_filtrado"] = df[filtro]
 # o seu arquivo e a página aparece sozinha, sem precisar editar este app.py.
 PASTA = Path(__file__).parent
 CATALOGO = [
+    ("paginas/0_inicio.py", "Início", "🏠"),
     ("paginas/1_visao_geral.py", "Visão geral", "📊"),
     ("paginas/2_antecedencia.py", "Antecedência do agendamento", "📅"),
     ("paginas/3_sms.py", "Lembrete por SMS", "💬"),
